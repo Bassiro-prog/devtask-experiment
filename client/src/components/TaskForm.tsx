@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import type { TaskInput } from '../types/task';
+import { cardClass, inputClass, primaryButtonClass } from './styles';
 
 interface TaskFormProps {
   onSubmit: (input: TaskInput) => Promise<void>;
@@ -32,10 +33,7 @@ export function TaskForm({ onSubmit }: TaskFormProps) {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
-    >
+    <form onSubmit={handleSubmit} className={`${cardClass} space-y-3 p-4`} noValidate>
       <div>
         <label htmlFor="task-title" className="sr-only">
           Título da tarefa
@@ -46,7 +44,9 @@ export function TaskForm({ onSubmit }: TaskFormProps) {
           onChange={(e) => setTitle(e.target.value)}
           placeholder="O que você precisa fazer?"
           maxLength={120}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? 'task-form-error' : undefined}
+          className={inputClass}
         />
       </div>
       <div>
@@ -60,18 +60,14 @@ export function TaskForm({ onSubmit }: TaskFormProps) {
           placeholder="Descrição (opcional)"
           maxLength={500}
           rows={2}
-          className="w-full resize-none rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+          className={`${inputClass} resize-none`}
         />
       </div>
-      <div className="flex items-center justify-between gap-3">
-        <p role="alert" className="text-sm text-red-600">
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p id="task-form-error" role="alert" className="text-sm text-red-600 dark:text-red-400">
           {error}
         </p>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white transition hover:bg-indigo-700 disabled:opacity-60"
-        >
+        <button type="submit" disabled={isSubmitting} className={primaryButtonClass}>
           {isSubmitting ? 'Adicionando...' : 'Adicionar tarefa'}
         </button>
       </div>
