@@ -16,7 +16,8 @@
     "typecheck": "npm run typecheck -w server && npm run typecheck -w client",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test": "npm run test -w server"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
