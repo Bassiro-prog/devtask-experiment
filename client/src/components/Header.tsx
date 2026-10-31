@@ -1,3 +1,4 @@
+import { taskProgress } from '../utils/progress';
 import { ThemeToggle } from './ThemeToggle';
 
 interface HeaderProps {
@@ -6,7 +7,7 @@ interface HeaderProps {
 }
 
 export function Header({ total, completed }: HeaderProps) {
-  const progress = total === 0 ? 0 : Math.round((completed / total) * 100);
+  const progress = taskProgress(completed, total);
 
   return (
     <header className="space-y-4">
