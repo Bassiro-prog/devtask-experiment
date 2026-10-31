@@ -40,14 +40,21 @@ export function useTasks() {
   const createTask = useCallback(
     async (input: TaskInput) => {
       const task = await tasksApi.create(input);
-      if (error) {
-        // A API voltou depois de uma falha no carregamento: busca a lista completa.
-        await reload();
-      } else {
+      if (!error) {
         setTasks((current) => [task, ...current]);
+        return;
+      }
+      // A API voltou depois de uma falha no carregamento: busca a lista completa.
+      try {
+        setTasks(await tasksApi.list());
+        setError(null);
+      } catch (err) {
+        setError(
+          `Tarefa "${task.title}" criada, mas a lista não pôde ser carregada: ${(err as Error).message}`,
+        );
       }
     },
-    [error, reload],
+    [error],
   );
 
   const updateTask = useCallback(async (id: number, changes: TaskUpdate) => {
