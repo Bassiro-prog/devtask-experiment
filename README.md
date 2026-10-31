@@ -12,7 +12,7 @@ Sistema simples e moderno de gerenciamento de tarefas.
 
 ## Pré-requisitos
 
-- Node.js 20.19+, 22.13+ ou 24+ (recomendado: versão do arquivo `.nvmrc`)
+- Node.js 22.22+, 24.15+ ou 26+ (recomendado: versão do arquivo `.nvmrc`)
 
 ## Funcionalidades
 
