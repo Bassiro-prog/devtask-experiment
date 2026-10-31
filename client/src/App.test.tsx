@@ -168,6 +168,28 @@ describe('App', () => {
     expect(screen.queryByText('Falha simulada no servidor')).not.toBeInTheDocument();
   });
 
+  it('avisa que a tarefa foi criada quando a lista ainda não carrega', async () => {
+    const { state, fetchMock } = mockTasksApi([{ title: 'Recuperada' }]);
+    state.failNext = true;
+    const user = userEvent.setup();
+    render(<App />);
+    await screen.findByText('Falha simulada no servidor');
+
+    const realFetch = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (input, init) =>
+      (init?.method ?? 'GET') === 'GET'
+        ? new Response(JSON.stringify({ error: 'Servidor fora do ar' }), { status: 500 })
+        : realFetch(input, init),
+    );
+    await user.type(screen.getByLabelText('Título da tarefa'), 'Pagar aluguel');
+    await user.click(screen.getByRole('button', { name: 'Adicionar tarefa' }));
+
+    expect(
+      await screen.findByText(/Tarefa "Pagar aluguel" criada, mas a lista não pôde ser carregada/),
+    ).toBeInTheDocument();
+    expect(state.tasks).toHaveLength(2);
+  });
+
   it('não permite cancelar a edição enquanto salva', async () => {
     const { fetchMock } = mockTasksApi([{ title: 'Editar' }]);
     const user = userEvent.setup();
