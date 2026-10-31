@@ -13,6 +13,25 @@ afterAll(async () => {
   await prisma.$disconnect();
 });
 
+describe('origem das requisições', () => {
+  it('recusa requisições de navegador vindas de outro site', async () => {
+    const res = await request(app)
+      .post('/api/tasks')
+      .set('Origin', 'https://site-malicioso.example')
+      .send({ title: 'Invasão' });
+
+    expect(res.status).toBe(403);
+    expect(await prisma.task.count()).toBe(0);
+  });
+
+  it('aceita requisições do frontend do DevTask', async () => {
+    const res = await request(app).get('/api/tasks').set('Origin', 'http://localhost:5173');
+
+    expect(res.status).toBe(200);
+    expect(res.headers['access-control-allow-origin']).toBe('http://localhost:5173');
+  });
+});
+
 describe('POST /api/tasks', () => {
   it('cria uma tarefa pendente', async () => {
     const res = await request(app)
