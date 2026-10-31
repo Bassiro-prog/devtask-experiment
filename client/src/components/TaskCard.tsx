@@ -97,7 +97,8 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
             <button
               type="button"
               onClick={() => setIsEditing(false)}
-              className="rounded-lg px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+              disabled={isBusy}
+              className="rounded-lg px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-800"
             >
               Cancelar
             </button>

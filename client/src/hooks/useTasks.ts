@@ -37,10 +37,18 @@ export function useTasks() {
     return fetchTasks();
   }, [fetchTasks]);
 
-  const createTask = useCallback(async (input: TaskInput) => {
-    const task = await tasksApi.create(input);
-    setTasks((current) => [task, ...current]);
-  }, []);
+  const createTask = useCallback(
+    async (input: TaskInput) => {
+      const task = await tasksApi.create(input);
+      if (error) {
+        // A API voltou depois de uma falha no carregamento: busca a lista completa.
+        await reload();
+      } else {
+        setTasks((current) => [task, ...current]);
+      }
+    },
+    [error, reload],
+  );
 
   const updateTask = useCallback(async (id: number, changes: TaskUpdate) => {
     const task = await tasksApi.update(id, changes);

@@ -12,7 +12,7 @@ Sistema simples e moderno de gerenciamento de tarefas.
 
 ## Pré-requisitos
 
-- Node.js 20 ou superior (recomendado: versão do arquivo `.nvmrc`)
+- Node.js 20.19+, 22.13+ ou 24+ (recomendado: versão do arquivo `.nvmrc`)
 
 ## Funcionalidades
 
@@ -35,6 +35,14 @@ npm run dev
 
 Na primeira execução, o banco SQLite é criado automaticamente em `server/dev.db`.
 Para usar outro arquivo, defina a variável `DATABASE_URL` (ex.: `DATABASE_URL=file:./outro.db`).
+
+## Segurança
+
+O DevTask é um app pessoal para uso local: a API **não tem autenticação**. Por isso, por padrão
+ela só escuta em `localhost` e só aceita requisições do navegador vindas de `http://localhost:5173`.
+
+- `HOST`: endereço em que a API escuta (padrão `localhost`). Não use `0.0.0.0` sem colocar autenticação na frente.
+- `CORS_ORIGIN`: origem permitida para chamadas do navegador (padrão `http://localhost:5173`).
 
 ## API
 

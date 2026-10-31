@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { Prisma } from '../generated/prisma/client.js';
 import { prisma } from '../lib/prisma.js';
 import { HttpError } from '../middlewares/error-handler.js';
 import {
@@ -8,20 +9,25 @@ import {
   updateTaskSchema,
 } from '../validators/task.validators.js';
 
-async function findTaskOrThrow(rawId: unknown) {
+const taskNotFound = () => new HttpError(404, 'Tarefa não encontrada');
+
+function parseTaskId(rawId: unknown) {
   const parsed = taskIdSchema.safeParse(rawId);
-  const task = parsed.success ? await prisma.task.findUnique({ where: { id: parsed.data } }) : null;
-  if (!task) {
-    throw new HttpError(404, 'Tarefa não encontrada');
+  if (!parsed.success) {
+    throw taskNotFound();
   }
-  return task;
+  return parsed.data;
+}
+
+function isRecordNotFound(err: unknown) {
+  return err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025';
 }
 
 export async function listTasks(req: Request, res: Response) {
   const { status } = listTasksQuerySchema.parse(req.query);
   const tasks = await prisma.task.findMany({
     where: status ? { completed: status === 'completed' } : undefined,
-    orderBy: { createdAt: 'desc' },
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
   });
   res.json(tasks);
 }
@@ -33,14 +39,22 @@ export async function createTask(req: Request, res: Response) {
 }
 
 export async function updateTask(req: Request, res: Response) {
-  const { id } = await findTaskOrThrow(req.params.id);
+  const id = parseTaskId(req.params.id);
   const data = updateTaskSchema.parse(req.body);
-  const task = await prisma.task.update({ where: { id }, data });
-  res.json(task);
+  try {
+    const task = await prisma.task.update({ where: { id }, data });
+    res.json(task);
+  } catch (err) {
+    throw isRecordNotFound(err) ? taskNotFound() : err;
+  }
 }
 
 export async function deleteTask(req: Request, res: Response) {
-  const { id } = await findTaskOrThrow(req.params.id);
-  await prisma.task.delete({ where: { id } });
+  const id = parseTaskId(req.params.id);
+  try {
+    await prisma.task.delete({ where: { id } });
+  } catch (err) {
+    throw isRecordNotFound(err) ? taskNotFound() : err;
+  }
   res.status(204).end();
 }
