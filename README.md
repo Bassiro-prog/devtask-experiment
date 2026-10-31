@@ -25,15 +25,15 @@ npm run dev
 - API: http://localhost:3333 (o frontend redireciona `/api` para a API)
 
 Na primeira execução, o banco SQLite é criado automaticamente em `server/dev.db`.
-Para usar outro arquivo, defina a variável `DATABASE_URL` (ex.: `DATABASE_URL=file:./outro.db`).
+Para usar outro arquivo, defina a variável `DATABASE_URL` (ex.: `DATABASE_URL=file:./outro.db`; caminhos relativos partem da pasta `server/`).
 
 ## Segurança
 
 O DevTask é um app pessoal para uso local: a API **não tem autenticação**. Por isso, por padrão
-ela só escuta em `localhost` e só aceita requisições do navegador vindas de `http://localhost:5173`.
+ela só escuta em `localhost` e recusa (`403`) requisições de navegador vindas de outros sites.
 
 - `HOST`: endereço em que a API escuta (padrão `localhost`). Não use `0.0.0.0` sem colocar autenticação na frente.
-- `CORS_ORIGIN`: origem permitida para chamadas do navegador (padrão `http://localhost:5173`).
+- `CORS_ORIGIN`: origens permitidas, separadas por vírgula (padrão `http://localhost:5173,http://127.0.0.1:5173`).
 
 ## API
 
