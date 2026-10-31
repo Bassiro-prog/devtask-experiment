@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
@@ -151,5 +151,65 @@ describe('App', () => {
     expect(document.documentElement).toHaveClass('dark');
     expect(localStorage.getItem('devtask-theme')).toBe('dark');
     expect(screen.getByRole('button', { name: 'Ativar tema claro' })).toBeInTheDocument();
+  });
+
+  it('mostra a lista completa ao criar uma tarefa depois de falha no carregamento', async () => {
+    const { state } = mockTasksApi([{ title: 'Recuperada' }]);
+    state.failNext = true;
+    const user = userEvent.setup();
+    render(<App />);
+    await screen.findByText('Falha simulada no servidor');
+
+    await user.type(screen.getByLabelText('Título da tarefa'), 'Nova tarefa');
+    await user.click(screen.getByRole('button', { name: 'Adicionar tarefa' }));
+
+    expect(await within(getPanel('Pendentes')).findByText('Nova tarefa')).toBeInTheDocument();
+    expect(within(getPanel('Pendentes')).getByText('Recuperada')).toBeInTheDocument();
+    expect(screen.queryByText('Falha simulada no servidor')).not.toBeInTheDocument();
+  });
+
+  it('não permite cancelar a edição enquanto salva', async () => {
+    const { fetchMock } = mockTasksApi([{ title: 'Editar' }]);
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(await screen.findByRole('button', { name: 'Editar "Editar"' }));
+    fetchMock.mockImplementationOnce(() => new Promise<Response>(() => {}));
+    await user.click(screen.getByRole('button', { name: 'Salvar' }));
+
+    expect(screen.getByRole('button', { name: 'Cancelar' })).toBeDisabled();
+  });
+
+  it('anuncia o carregamento para leitores de tela', () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => new Promise<Response>(() => {})),
+    );
+    render(<App />);
+
+    expect(screen.getByRole('status')).toHaveTextContent('Carregando tarefas...');
+  });
+
+  it('segue o tema do sistema sem salvar enquanto não há escolha manual', async () => {
+    const listeners: ((event: MediaQueryListEvent) => void)[] = [];
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => ({
+        matches: true,
+        addEventListener: (_: string, fn: (event: MediaQueryListEvent) => void) =>
+          listeners.push(fn),
+        removeEventListener: vi.fn(),
+      })),
+    );
+    mockTasksApi();
+    render(<App />);
+    await screen.findByText('Nenhuma tarefa concluída ainda.');
+
+    expect(document.documentElement).toHaveClass('dark');
+    expect(localStorage.getItem('devtask-theme')).toBeNull();
+
+    act(() => listeners.forEach((fn) => fn({ matches: false } as MediaQueryListEvent)));
+    expect(document.documentElement).not.toHaveClass('dark');
+    expect(localStorage.getItem('devtask-theme')).toBeNull();
   });
 });
