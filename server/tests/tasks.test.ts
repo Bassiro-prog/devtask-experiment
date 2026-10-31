@@ -72,6 +72,15 @@ describe('GET /api/tasks', () => {
     expect(completed.body.map((t: { id: number }) => t.id)).toEqual([second.id]);
   });
 
+  it('desempata pela ordem de criação quando a data é igual', async () => {
+    const createdAt = new Date('2024-01-01T10:00:00Z');
+    const first = await prisma.task.create({ data: { title: 'A', createdAt } });
+    const second = await prisma.task.create({ data: { title: 'B', createdAt } });
+
+    const res = await request(app).get('/api/tasks');
+    expect(res.body.map((t: { id: number }) => t.id)).toEqual([second.id, first.id]);
+  });
+
   it('rejeita status inválido', async () => {
     const res = await request(app).get('/api/tasks?status=foo');
     expect(res.status).toBe(400);
@@ -125,5 +134,16 @@ describe('DELETE /api/tasks/:id', () => {
   it('retorna 404 para tarefa inexistente', async () => {
     const res = await request(app).delete('/api/tasks/999');
     expect(res.status).toBe(404);
+  });
+
+  it('retorna 404 na segunda de duas exclusões simultâneas', async () => {
+    const task = await prisma.task.create({ data: { title: 'Duplicada' } });
+
+    const statuses = await Promise.all([
+      request(app).delete(`/api/tasks/${task.id}`),
+      request(app).delete(`/api/tasks/${task.id}`),
+    ]).then((responses) => responses.map((r) => r.status).sort());
+
+    expect(statuses).toEqual([204, 404]);
   });
 });
