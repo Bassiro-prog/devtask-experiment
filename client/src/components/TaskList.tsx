@@ -26,7 +26,6 @@ export function TaskList({
       id={`panel-${status}`}
       role="tabpanel"
       aria-labelledby={`tab-${status}`}
-      aria-label={title}
       className={`space-y-3 md:block ${isActiveTab ? 'block' : 'hidden'}`}
     >
       <h2 className="hidden items-center gap-2 font-semibold md:flex">

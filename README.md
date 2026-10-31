@@ -8,11 +8,20 @@ Sistema simples e moderno de gerenciamento de tarefas.
 - **Backend:** Node.js + Express + TypeScript (`server/`)
 - **Banco de dados:** SQLite com Prisma ORM
 - **Validação:** Zod
-- **Testes:** Vitest + Supertest
+- **Testes:** Vitest + Supertest (API) e Testing Library (interface)
 
 ## Pré-requisitos
 
 - Node.js 20 ou superior (recomendado: versão do arquivo `.nvmrc`)
+
+## Funcionalidades
+
+- Criar, editar e excluir tarefas (com confirmação antes de excluir)
+- Marcar tarefas como concluídas ou voltar para pendentes
+- Tarefas separadas em **Pendentes** e **Concluídas**, com contadores e barra de progresso
+- Layout responsivo: colunas lado a lado no desktop, abas no celular
+- Tema claro/escuro (segue o sistema e lembra a sua escolha)
+- Dados salvos em banco SQLite
 
 ## Como rodar
 
@@ -53,3 +62,36 @@ Erros de validação retornam `400` com `{ "error": "mensagem" }`; tarefa inexis
 
 - `npm run db:migrate -- --name <nome>`: cria uma nova migração após alterar `prisma/schema.prisma`
 - `npm run db:studio`: abre o Prisma Studio para visualizar os dados
+
+## Estrutura do projeto
+
+```
+devtask-experiment/
+├── client/                  # Frontend (React + Vite + Tailwind)
+│   └── src/
+│       ├── components/      # Header, TaskForm, TaskList, TaskCard, StatusTabs, ConfirmDialog...
+│       ├── hooks/           # useTasks (estado + chamadas à API), useTheme
+│       ├── services/        # api.ts (fetch para /api/tasks)
+│       ├── types/           # tipo Task
+│       └── App.tsx
+├── server/                  # Backend (Express + Prisma)
+│   ├── prisma/              # schema.prisma e migrações
+│   ├── src/
+│   │   ├── routes/          # tasks.routes.ts
+│   │   ├── controllers/     # lógica de cada rota
+│   │   ├── validators/      # schemas Zod
+│   │   ├── middlewares/     # tratamento de erros
+│   │   └── lib/             # cliente Prisma
+│   └── tests/               # testes da API
+└── package.json             # scripts que rodam client + server juntos
+```
+
+## Produção
+
+```bash
+npm run build
+npm run start -w server   # API em http://localhost:3333
+```
+
+O build do frontend fica em `client/dist/` e pode ser servido por qualquer hospedagem estática,
+desde que as requisições para `/api` sejam encaminhadas para a API.

@@ -17,7 +17,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "npm run test -w server"
+    "test": "npm run test -w server && npm run test -w client"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
